@@ -17,7 +17,7 @@ You'll need the following dependencies (please see individual installation proce
     
 Assuming you have all of these set up, you can download and extract these project files to a directory or else just grab the latest from github::
 
-    $ git git://github.com/ajfisher/TODO
+    $ git git://github.com/ajfisher/realtime-temperature.git
     
 
 General usage
