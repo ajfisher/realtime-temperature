@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Temperature data in realtime from Django / Socket IO / Arduino{%endblock%}
+
+{% block extra_js %}
+{% load socketio_tags %}
+{% socketio %}
+    <script type="text/javascript" src="{{STATIC_URL}}js/smoothie.js"></script>
+    <script type="text/javascript">
+        var room = "tempvalues";
+	    var socket;
+
+        var tempdata = [
+            new TimeSeries(), 
+            new TimeSeries()
+        ];
+        
+        var timeseries_options = [
+            { strokeStyle: 'rgba(255, 128, 0, 1)', fillStyle: 'rgba(255, 128, 0, 0.2)', lineWidth: 2 },
+            { strokeStyle: 'rgba(0, 200, 170, 1)', fillStyle: 'rgba(0, 200, 170, 0.2)', lineWidth: 2 }
+        ]
+
+	    $(function() {
+	        socket = new io.Socket();
+	        socket.connect();
+	        socket.on('connect', function() {
+		        socket.subscribe(room);		        
+		        createTimeline();
+	        });
+	        
+            socket.on('message', function(data) {
+                tempdata[data.sensor].append(new Date().getTime(), data.value);
+            });
+	        
+        });
+
+
+      function createTimeline() {
+        var chart = new SmoothieChart({ 
+        	millisPerPixel: 20, 
+        	grid: { strokeStyle: '#555555', lineWidth: 1, millisPerLine: 1000, verticalSections: 8 }, 
+        	maxValue: 35, minValue: 25
+    	});
+
+		// add all the temperature sensors into the array
+        for (var i = 0; i< tempdata.length; i++) {
+            chart.addTimeSeries(tempdata[i], timeseries_options[i]);
+        }
+        chart.streamTo(document.getElementById("temperature"), 1000);
+      }
+
+    </script>
+{% endblock %}
+
+
+{% block main %}
+    <h1>Arduino temperature data in realtime </h1>
+    <p>Data coming live from temperature sensors to server.</p>
+    <canvas id="temperature" width="1200" height="400"></canvas>
+{% endblock %}
